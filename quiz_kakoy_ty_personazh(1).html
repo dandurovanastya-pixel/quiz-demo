@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Какой ты персонаж?</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:16px;font-family:Arial,sans-serif;background:linear-gradient(135deg,#665cff,#ff5ca8);color:#202034}
+.app{max-width:720px;margin:auto}.card{background:#fff;border-radius:24px;padding:24px;box-shadow:0 18px 50px #321b7733}
+h1{font-size:clamp(28px,7vw,42px);margin:0 0 8px}.sub{color:#6c6c7c;margin:0 0 20px}
+.progress-info{display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#666;margin-bottom:7px}.progress{height:9px;background:#eeeef5;border-radius:20px;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#665cff,#ff5ca8);transition:.3s}
+.badge{display:inline-block;background:#eeeaff;color:#574dd4;padding:7px 12px;border-radius:20px;font-size:13px;font-weight:bold;margin:20px 0 12px}
+h2{font-size:clamp(21px,5vw,29px);line-height:1.25;margin:0 0 18px}.answers{display:grid;gap:11px}
+.answer{border:2px solid #e5e5ee;background:#fff;border-radius:16px;padding:14px 16px;text-align:left;font:inherit;font-size:16px;line-height:1.35;cursor:pointer;transition:.15s}.answer:hover{border-color:#756cf0;transform:translateY(-1px)}
+.letter{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;background:#f0efff;color:#554bd0;border-radius:10px;font-weight:900;margin-right:9px}.answer-row{display:flex;align-items:flex-start}
+.result{text-align:center;display:none}.emoji{font-size:54px}.result h2{font-size:44px;margin:8px 0}.desc{max-width:570px;margin:0 auto 22px;font-size:18px;line-height:1.55;color:#555568}.scores{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px}.score{background:#f5f4fb;padding:8px 11px;border-radius:12px;font-size:13px;font-weight:bold}
+.restart{border:0;border-radius:14px;padding:14px 25px;background:linear-gradient(90deg,#665cff,#ff5ca8);color:white;font:inherit;font-weight:bold;font-size:17px;cursor:pointer}
+footer{text-align:center;color:#ffffffcc;font-size:12px;margin-top:12px}@media(max-width:480px){body{padding:10px}.card{padding:18px}.answer{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="app"><div class="card">
+<div id="quiz">
+<h1>Какой ты персонаж?</h1><p class="sub">Выбирай вариант, который больше всего похож на тебя.</p>
+<div class="progress-info"><span id="ptext"></span><span id="pct"></span></div><div class="progress"><div class="bar" id="bar"></div></div>
+<div class="badge" id="qnum"></div><h2 id="question"></h2><div class="answers" id="answers"></div>
+</div>
+<div class="result" id="result"><div class="emoji">✨</div><p class="sub">Твой результат</p><h2 id="rname"></h2><p class="desc" id="rdesc"></p><div class="scores" id="scores"></div><button class="restart" onclick="restart()">Пройти ещё раз</button></div>
+</div><footer>Выбери ответ — и узнай своего персонажа!</footer></div>
+<script>
+const qs=[
+["Что ты делаешь в свободный день?",["Иду исследовать новое место, даже если это далеко.","Остаюсь дома с книгой в тихом уголке.","Звоню другу и спрашиваю, нужна ли помощь.","Придумываю весёлую игру или розыгрыш."]],
+["В школьном проекте ты...",["Беру самую смелую идею и веду команду.","Собираю факты и делаю аккуратную презентацию.","Помогаю всем в команде и слежу, чтобы никого не забыли.","Добавляю шутку и делаю проект интересным."]],
+["Твой идеальный выходной?",["Поход, велосипед или новое приключение.","Тихий вечер с чаем и хорошей книгой.","День с семьёй или помощь другу.","Вечеринка, игры и смех с друзьями."]],
+["Друг грустит. Что ты сделаешь?",["Скажу: «Пойдём, найдём что-то интересное!»","Выслушаю и дам добрый совет.","Обниму и помогу, чем смогу.","Расскажу смешную историю, чтобы поднять настроение."]],
+["Что ты выберешь в кафе?",["Что-то новое, что я ещё не пробовал.","Спокойно выберу любимый чай и десерт.","Возьму то, чем можно поделиться с друзьями.","Самое смешное название в меню."]],
+["В новой компании ты...",["Первым начинаю знакомиться и предлагаю игру.","Сначала наблюдаю и слушаю.","Подхожу к тому, кто стесняется, и говорю с ним.","Шучу, чтобы все расслабились."]],
+["Какое задание ты выберешь?",["Организовать поход или квест.","Найти информацию и сделать доклад.","Помочь младшим с домашним заданием.","Придумать конкурс с призами и шутками."]],
+["Твой девиз?",["«Вперёд, к приключениям!»","«Сначала подумай, потом сделай».","«Помоги другому — и мир станет добрее».","«Если можно пошутить — шути!»"]]
+];
+const chars=[
+["Аня","Ты смелая и активная. Любишь приключения и не боишься пробовать новое. Ты ведёшь друзей за собой и заряжаешь их энергией."],
+["Борис","Ты спокойный и умный. Любишь читать, думать и узнавать новое. Ты решаешь задачи внимательно и не спешишь с выводами."],
+["Вера","Ты добрая и заботливая. Тебе важно, чтобы всем было хорошо. Ты всегда готова помочь и поддержать."],
+["Гриша","Ты весёлый и хитрый. Любишь шутки, игры и сюрпризы. С тобой никогда не бывает скучно."]
+];
+let i=0,s=[0,0,0,0];
+function render(){
+ let q=qs[i], pct=Math.round(i/qs.length*100);
+ ptext.textContent=`Вопрос ${i+1} из ${qs.length}`;pctEl.textContent=pct+"%";bar.style.width=pct+"%";qnum.textContent="ВОПРОС "+(i+1);question.textContent=q[0];answers.innerHTML="";
+ q[1].forEach((t,n)=>{let b=document.createElement("button");b.className="answer";b.innerHTML=`<span class="answer-row"><span class="letter">${"ABCD"[n]}</span><span>${t}</span></span>`;b.onclick=()=>pick(n);answers.appendChild(b)})
+}
+function pick(n){s[n]++;i++;if(i<qs.length)render();else show()}
+function show(){
+ quiz.style.display="none";result.style.display="block";bar.style.width="100%";pctEl.textContent="100%";
+ let m=Math.max(...s),w=s.indexOf(m);rname.textContent=chars[w][0];rdesc.textContent=chars[w][1];
+ scores.innerHTML=s.map((x,n)=>`<div class="score">${chars[n][0]}: ${x}</div>`).join("");
+}
+function restart(){i=0;s=[0,0,0,0];result.style.display="none";quiz.style.display="block";render()}
+const question=document.getElementById("question"),answers=document.getElementById("answers"),qnum=document.getElementById("qnum"),ptext=document.getElementById("ptext"),pctEl=document.getElementById("pct"),bar=document.getElementById("bar"),quiz=document.getElementById("quiz"),result=document.getElementById("result"),rname=document.getElementById("rname"),rdesc=document.getElementById("rdesc"),scores=document.getElementById("scores");
+render();
+</script></body></html>
