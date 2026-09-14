@@ -3,26 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Какой ты персонаж?</title>
+<title>Какой ты сегодня дракон?</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #f0f8ff; margin: 0; padding: 15px; color: #333; }
-  .container { max-width: 500px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  h1 { text-align: center; font-size: 22px; margin-bottom: 10px; }
-  .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
-  .question { font-weight: bold; font-size: 16px; margin-bottom: 12px; }
-  .answer { display: block; width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; font-size: 15px; background: #f9f9f9; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; }
-  .answer:active { background: #e0e0e0; }
-  .result-title { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-  .result-text { font-size: 15px; line-height: 1.5; margin-bottom: 20px; }
-  .restart { display: block; width: 100%; padding: 12px; font-size: 16px; background: #ff8c00; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-  .restart:active { background: #e07b00; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #0a0a1a;
+    color: #eee;
+    min-height: 100vh;
+    padding: 15px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .embers {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .ember {
+    position: absolute;
+    bottom: 0;
+    background: #f4c430;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #f4c430, 0 0 14px #ff8c00;
+    animation: rise linear infinite;
+    opacity: 0;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: linear-gradient(160deg, #16213e 0%, #1a1a2e 100%);
+    border-radius: 16px;
+    padding: 22px 20px;
+    box-shadow: 0 0 40px rgba(244, 196, 48, 0.15), 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(244, 196, 48, 0.25);
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    margin: 0 0 6px 0;
+    color: #f4c430;
+    animation: title-glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes title-glow {
+    from { text-shadow: 0 0 8px rgba(244, 196, 48, 0.4); }
+    to   { text-shadow: 0 0 20px rgba(244, 196, 48, 0.9), 0 0 30px rgba(255, 140, 0, 0.6); }
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    margin: 0 0 18px 0;
+  }
+
+  .progress {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4500, #f4c430);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(244, 196, 48, 0.8);
+  }
+
+  .question {
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 16px;
+    color: #f4c430;
+    line-height: 1.4;
+    animation: fade-in 0.4s ease;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .answer {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    background: linear-gradient(135deg, #0f3460 0%, #1a2a52 100%);
+    color: #eee;
+    border: 2px solid #1a4d7a;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .answer:hover, .answer:active {
+    background: linear-gradient(135deg, #1a4d7a 0%, #ff4500 200%);
+    border-color: #f4c430;
+    box-shadow: 0 0 15px rgba(244, 196, 48, 0.45);
+    transform: translateY(-1px);
+  }
+
   .hidden { display: none; }
+
+  .fire-scene {
+    position: relative;
+    height: 210px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #05050f;
+    animation: fade-in 0.5s ease;
+  }
+
+  .glow {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    filter: blur(28px);
+    opacity: 0.9;
+    animation: glow-pulse 2.5s ease-in-out infinite alternate;
+    z-index: 1;
+  }
+  @keyframes glow-pulse {
+    from { transform: scale(1); opacity: 0.7; }
+    to   { transform: scale(1.18); opacity: 1; }
+  }
+
+  .dragon-face {
+    font-size: 92px;
+    position: relative;
+    z-index: 3;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 22px currentColor);
+    line-height: 1;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  .flames {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    z-index: 2;
+    padding: 0 10px;
+  }
+  .flame {
+    font-size: 30px;
+    animation: flicker 0.8s ease-in-out infinite alternate;
+    opacity: 0.95;
+    line-height: 1;
+  }
+  .flame:nth-child(1) { animation-delay: 0s;    font-size: 26px; }
+  .flame:nth-child(2) { animation-delay: 0.15s; font-size: 36px; }
+  .flame:nth-child(3) { animation-delay: 0.30s; font-size: 30px; }
+  .flame:nth-child(4) { animation-delay: 0.10s; font-size: 38px; }
+  .flame:nth-child(5) { animation-delay: 0.25s; font-size: 28px; }
+  @keyframes flicker {
+    from { transform: translateY(0) scale(1);     opacity: 0.7; }
+    to   { transform: translateY(-12px) scale(1.1); opacity: 1; }
+  }
+
+  .result-title {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: fade-in 0.5s ease;
+    text-shadow: 0 0 15px currentColor;
+  }
+
+  .result-text {
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #ddd;
+    animation: fade-in 0.7s ease;
+  }
+
+  .restart {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #f4c430 0%, #ff8c00 100%);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 20px rgba(244, 196, 48, 0.4);
+  }
+  .restart:hover, .restart:active {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(244, 196, 48, 0.8);
+  }
+
+  /* ==== Огненные темы для каждого дракона ==== */
+
+  /* Огненный — красно-оранжевое пламя */
+  .theme-fire .glow {
+    background: radial-gradient(circle,
+      #ffffff 0%, #ffdd00 18%, #ff8c00 45%, #ff0000 72%, transparent 88%);
+  }
+  .theme-fire .dragon-face { color: #ff8c00; }
+
+  /* Ледяной — голубое сияние */
+  .theme-ice .glow {
+    background: radial-gradient(circle,
+      #ffffff 0%, #c8f0ff 18%, #4dd2ff 45%, #0066cc 72%, transparent 88%);
+  }
+  .theme-ice .dragon-face { color: #4dd2ff; }
+
+  /* Радужный — всеми цветами */
+  .theme-rainbow .glow {
+    background: conic-gradient(
+      #ff0000, #ff8c00, #ffdd00, #00cc44,
+      #0099ff, #6633ff, #ff0099, #ff0000);
+    filter: blur(38px);
+  }
+  .theme-rainbow .dragon-face { color: #ff66cc; }
+
+  /* Ночной — фиолетово-звёздный */
+  .theme-night .glow {
+    background: radial-gradient(circle,
+      #ffffff 0%, #c8b6e2 18%, #7a3fd6 45%, #2a0d55 75%, transparent 90%);
+  }
+  .theme-night .dragon-face { color: #b19cd9; }
 </style>
 </head>
 <body>
+
+<div class="embers" id="embers"></div>
+
 <div class="container">
-  <h1>Какой ты персонаж?</h1>
+  <h1>🐉 Какой ты сегодня дракон? 🔥</h1>
   <p class="subtitle" id="subtitle">Выбирай вариант, который больше всего похож на тебя.</p>
+
+  <div class="progress" id="progress-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
 
   <div id="quiz-area">
     <div class="question" id="question-text"></div>
@@ -30,6 +282,17 @@
   </div>
 
   <div id="result-area" class="hidden">
+    <div class="fire-scene" id="fire-scene">
+      <div class="glow" id="glow"></div>
+      <div class="dragon-face" id="dragon-face">🐉</div>
+      <div class="flames" id="flames">
+        <span class="flame">🔥</span>
+        <span class="flame">🔥</span>
+        <span class="flame">🔥</span>
+        <span class="flame">🔥</span>
+        <span class="flame">🔥</span>
+      </div>
+    </div>
     <div class="result-title" id="result-title"></div>
     <div class="result-text" id="result-text"></div>
     <button class="restart" onclick="restartQuiz()">Пройти ещё раз</button>
@@ -39,88 +302,100 @@
 <script>
 var questions = [
   {
-    text: "Что ты делаешь в свободный день?",
+    text: "Ты только проснулся. Какое у тебя настроение?",
     answers: [
-      { text: "Иду исследовать новое место", character: "Аня" },
-      { text: "Остаюсь дома с книгой", character: "Борис" },
-      { text: "Звоню другу и спрашиваю, нужна ли помощь", character: "Вера" },
-      { text: "Придумываю весёлую игру или розыгрыш", character: "Гриша" }
+      { text: "Готов свернуть горы!", character: "Огненный дракон" },
+      { text: "Спокойное, никуда не спешу", character: "Ледяной дракон" },
+      { text: "Хочу скорее увидеть друзей!", character: "Радужный дракон" },
+      { text: "Ещё бы поспать...", character: "Ночной дракон" }
     ]
   },
   {
-    text: "В школьном проекте ты...",
+    text: "Кто-то тебя разбудил слишком рано. Что ты сделаешь?",
     answers: [
-      { text: "Беру самую смелую идею и веду команду", character: "Аня" },
-      { text: "Собираю факты и делаю аккуратную презентацию", character: "Борис" },
-      { text: "Помогаю всем и слежу, чтобы никого не забыли", character: "Вера" },
-      { text: "Добавляю шутку и делаю проект интересным", character: "Гриша" }
+      { text: "Рявкну и выпущу пар!", character: "Огненный дракон" },
+      { text: "Молча встану, без эмоций", character: "Ледяной дракон" },
+      { text: "Рассмеюсь и обниму", character: "Радужный дракон" },
+      { text: "Притворюсь, что сплю", character: "Ночной дракон" }
     ]
   },
   {
-    text: "Твой идеальный выходной?",
+    text: "Твоя любимая погода?",
     answers: [
-      { text: "Поход, велосипед или новое приключение", character: "Аня" },
-      { text: "Тихий вечер с чаем и хорошей книгой", character: "Борис" },
-      { text: "День с семьёй или помощь другу", character: "Вера" },
-      { text: "Вечеринка, игры и смех с друзьями", character: "Гриша" }
+      { text: "Жара и солнце!", character: "Огненный дракон" },
+      { text: "Мороз и снег", character: "Ледяной дракон" },
+      { text: "Радуга после дождя", character: "Радужный дракон" },
+      { text: "Гроза и полная луна", character: "Ночной дракон" }
     ]
   },
   {
-    text: "Друг грустит. Что ты сделаешь?",
+    text: "Что ты ешь на завтрак?",
     answers: [
-      { text: "Скажу: «Пойдём, найдём что-то интересное!»", character: "Аня" },
-      { text: "Выслушаю и дам добрый совет", character: "Борис" },
-      { text: "Обниму и помогу, чем смогу", character: "Вера" },
-      { text: "Расскажу смешную историю", character: "Гриша" }
+      { text: "Что-то острое и горячее!", character: "Огненный дракон" },
+      { text: "Прохладный йогурт", character: "Ледяной дракон" },
+      { text: "Разноцветные фрукты", character: "Радужный дракон" },
+      { text: "Ничего, я не голоден", character: "Ночной дракон" }
     ]
   },
   {
-    text: "Что ты выберешь в кафе?",
+    text: "Как ты проводишь свободный вечер?",
     answers: [
-      { text: "Что-то новое, что я ещё не пробовал", character: "Аня" },
-      { text: "Любимый чай и десерт", character: "Борис" },
-      { text: "То, чем можно поделиться с друзьями", character: "Вера" },
-      { text: "Самое смешное название в меню", character: "Гриша" }
+      { text: "Устраиваю гонки и шумные игры", character: "Огненный дракон" },
+      { text: "Читаю или размышляю в тишине", character: "Ледяной дракон" },
+      { text: "Танцую и пою с друзьями", character: "Радужный дракон" },
+      { text: "Сижу на крыше и смотрю на звёзды", character: "Ночной дракон" }
     ]
   },
   {
-    text: "В новой компании ты...",
+    text: "Друг попал в беду. Твои действия?",
     answers: [
-      { text: "Первым начинаю знакомиться", character: "Аня" },
-      { text: "Сначала наблюдаю и слушаю", character: "Борис" },
-      { text: "Подхожу к тому, кто стесняется", character: "Вера" },
-      { text: "Шучу, чтобы все расслабились", character: "Гриша" }
+      { text: "Бросаюсь спасать первым!", character: "Огненный дракон" },
+      { text: "Спокойно продумываю план", character: "Ледяной дракон" },
+      { text: "Поддерживаю добрым словом", character: "Радужный дракон" },
+      { text: "Тихо помогаю так, чтобы никто не заметил", character: "Ночной дракон" }
     ]
   },
   {
-    text: "Какое задание ты выберешь?",
+    text: "Твоё любимое место?",
     answers: [
-      { text: "Организовать поход или квест", character: "Аня" },
-      { text: "Найти информацию и сделать доклад", character: "Борис" },
-      { text: "Помочь младшим с домашним заданием", character: "Вера" },
-      { text: "Придумать конкурс с призами и шутками", character: "Гриша" }
+      { text: "Вулкан или пустыня", character: "Огненный дракон" },
+      { text: "Ледяная пещера", character: "Ледяной дракон" },
+      { text: "Цветущая поляна", character: "Радужный дракон" },
+      { text: "Тёмный лес ночью", character: "Ночной дракон" }
     ]
   },
   {
-    text: "Твой девиз?",
+    text: "Какая у тебя суперсила?",
     answers: [
-      { text: "«Вперёд, к приключениям!»", character: "Аня" },
-      { text: "«Сначала подумай, потом сделай»", character: "Борис" },
-      { text: "«Помоги другому — и мир станет добрее»", character: "Вера" },
-      { text: "«Если можно пошутить — шути!»", character: "Гриша" }
+      { text: "Дыхание огнём!", character: "Огненный дракон" },
+      { text: "Замораживать всё вокруг", character: "Ледяной дракон" },
+      { text: "Менять цвет и сиять", character: "Радужный дракон" },
+      { text: "Становиться невидимым", character: "Ночной дракон" }
     ]
   }
 ];
 
 var descriptions = {
-  "Аня": "Ты смелая и активная. Любишь приключения и не боишься пробовать новое. Ты ведёшь друзей за собой и заряжаешь их энергией.",
-  "Борис": "Ты спокойный и умный. Любишь читать, думать и узнавать новое. Ты решаешь задачи внимательно и не спешишь с выводами.",
-  "Вера": "Ты добрая и заботливая. Тебе важно, чтобы всем было хорошо. Ты всегда готова помочь и поддержать.",
-  "Гриша": "Ты весёлый и хитрый. Любишь шутки, игры и сюрпризы. С тобой никогда не бывает скучно."
+  "Огненный дракон": "🔥 Ты полон энергии и всегда готов к приключениям. Ты смелый, громкий и не боишься идти первым. Иногда вспыхиваешь, но зато от тебя всегда тепло.",
+  "Ледяной дракон": "❄️ Ты спокойный и рассудительный. Не любишь суету и шум, зато умеешь думать ясно и принимать верные решения. С тобой надёжно.",
+  "Радужный дракон": "🌈 Ты яркий и весёлый. Тебе важно быть с друзьями, делиться радостью и делать мир красочнее. С тобой всегда интересно и тепло.",
+  "Ночной дракон": "🌙 Ты загадочный и тихий. Любишь наблюдать, размышлять и быть в тени. Ты замечаешь то, чего другие не видят, и помогаешь незаметно."
+};
+
+var dragonThemes = {
+  "Огненный дракон": { theme: "theme-fire",    emoji: "🐉", flame: "🔥", titleColor: "#ff8c00" },
+  "Ледяной дракон":  { theme: "theme-ice",     emoji: "🐲", flame: "❄️", titleColor: "#4dd2ff" },
+  "Радужный дракон": { theme: "theme-rainbow", emoji: "🐉", flame: "🌈", titleColor: "#ff66cc" },
+  "Ночной дракон":   { theme: "theme-night",   emoji: "🐲", flame: "✨", titleColor: "#b19cd9" }
 };
 
 var currentQuestion = 0;
-var scores = { "Аня": 0, "Борис": 0, "Вера": 0, "Гриша": 0 };
+var scores = { "Огненный дракон": 0, "Ледяной дракон": 0, "Радужный дракон": 0, "Ночной дракон": 0 };
+
+function updateProgress() {
+  var pct = (currentQuestion / questions.length) * 100;
+  document.getElementById("progress-bar").style.width = pct + "%";
+}
 
 function showQuestion() {
   if (currentQuestion >= questions.length) {
@@ -128,8 +403,13 @@ function showQuestion() {
     return;
   }
 
+  updateProgress();
+
   var q = questions[currentQuestion];
-  document.getElementById("question-text").innerHTML = q.text;
+  var qText = document.getElementById("question-text");
+  qText.innerHTML = q.text;
+  qText.style.animation = "none";
+  setTimeout(function() { qText.style.animation = "fade-in 0.4s ease"; }, 10);
 
   var answersDiv = document.getElementById("answers");
   answersDiv.innerHTML = "";
@@ -152,8 +432,9 @@ function showQuestion() {
 function showResult() {
   document.getElementById("quiz-area").className = "hidden";
   document.getElementById("subtitle").className = "hidden";
+  document.getElementById("progress-wrap").className = "hidden";
 
-  var maxScore = 0;
+  var maxScore = -1;
   var winner = "";
   for (var char in scores) {
     if (scores[char] > maxScore) {
@@ -162,20 +443,53 @@ function showResult() {
     }
   }
 
-  document.getElementById("result-title").innerHTML = "Ты — " + winner + "!";
+  var theme = dragonThemes[winner];
+
+  document.getElementById("fire-scene").className = "fire-scene " + theme.theme;
+  document.getElementById("dragon-face").innerHTML = theme.emoji;
+
+  var flames = document.getElementsByClassName("flame");
+  for (var i = 0; i < flames.length; i++) {
+    flames[i].innerHTML = theme.flame;
+  }
+
+  var titleEl = document.getElementById("result-title");
+  titleEl.innerHTML = "Ты — " + winner + "!";
+  titleEl.style.color = theme.titleColor;
+
   document.getElementById("result-text").innerHTML = descriptions[winner];
   document.getElementById("result-area").className = "";
 }
 
 function restartQuiz() {
   currentQuestion = 0;
-  scores = { "Аня": 0, "Борис": 0, "Вера": 0, "Гриша": 0 };
+  scores = { "Огненный дракон": 0, "Ледяной дракон": 0, "Радужный дракон": 0, "Ночной дракон": 0 };
+
   document.getElementById("quiz-area").className = "";
   document.getElementById("subtitle").className = "subtitle";
+  document.getElementById("progress-wrap").className = "progress";
   document.getElementById("result-area").className = "hidden";
+  document.getElementById("fire-scene").className = "fire-scene";
+
   showQuestion();
 }
 
+function createEmbers() {
+  var container = document.getElementById("embers");
+  for (var i = 0; i < 18; i++) {
+    var ember = document.createElement("div");
+    ember.className = "ember";
+    var size = 2 + Math.random() * 4;
+    ember.style.width = size + "px";
+    ember.style.height = size + "px";
+    ember.style.left = (Math.random() * 100) + "%";
+    ember.style.animationDuration = (7 + Math.random() * 8) + "s";
+    ember.style.animationDelay = (Math.random() * 10) + "s";
+    container.appendChild(ember);
+  }
+}
+
+createEmbers();
 showQuestion();
 </script>
 </body>
